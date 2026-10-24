@@ -1,9 +1,20 @@
 {
-  "name": "real-estate",
+  "name": "property-management",
   "version": "0.0.0",
+  "description": "A property management back office built with Protobase: owners, properties, leases, rent and maintenance",
   "private": true,
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/protobase-community/property-management.git"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
+    "db:up": "test -f .env || cp .env.example .env; docker compose up -d --wait",
+    "db:down": "docker compose down",
     "db:migrate": "bun db/migrate.ts",
     "db:seed:base": "bun seed/base.ts",
     "db:seed": "bun seed/cli.ts",
@@ -16,11 +27,11 @@
     "dev": "protobase dev"
   },
   "dependencies": {
-    "@protobase/cli": "workspace:*",
-    "@protobase/layout": "workspace:*",
-    "@protobase/schema": "workspace:*",
-    "@protobase/server": "workspace:*",
-    "@protobase/ui": "workspace:*",
+    "@protobase/cli": "0.45.9",
+    "@protobase/layout": "0.45.9",
+    "@protobase/schema": "0.45.9",
+    "@protobase/server": "0.45.9",
+    "@protobase/ui": "0.45.9",
     "better-auth": "^1.7.12",
     "jose": "^6.2.12",
     "kysely": "^0.29.6",

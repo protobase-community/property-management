@@ -1,19 +1,56 @@
-# Real estate example database
+# Property management
 
-A real Postgres 18 database for a rental and property management firm: the owners whose homes it lets, the properties and units, leases and tenants, monthly rent and payments, and maintenance. Four module schemas, seeded deterministically with Dutch properties, tenants and vendors, EUR rents and three years of history (up to 2026-10-06).
+A back office for a rental and property management firm: the owners whose homes it lets, their properties and units,
+leases and tenants, monthly rent and payments with arrears, deposits, and maintenance tickets with work orders and
+vendors. Each role sees its own part, and a tenant's IBAN is revealed one at a time with an audit trail. It runs on a
+real Postgres 18 database with four module schemas, seeded deterministically with Dutch properties, tenants and
+vendors, EUR rents and three years of history (up to 2026-10-06).
 
-## Start
+For a public portal of homes for sale and for rent, see
+[property-portal](https://github.com/protobase-community/property-portal).
 
-The database sits beside the ERP's in the same Postgres container, as `real_estate`, so both examples work at once.
+## Use this template
+
+Press **Use this template** at the top of this page, then **Create a new repository**, to get your own copy with a
+clean history. Clone it and follow the setup below:
 
 ```sh
-bun run db:up                                            # repository root: docker compose up, creates the real_estate database and .env from .env.example
-bun run --cwd examples/real-estate db:migrate
-bun run --cwd examples/real-estate db:seed --scale small       # small | medium | large
-bun run --cwd examples/real-estate test                        # the unit tests next to the config and the seed
+git clone https://github.com/<you>/<your-repository>.git
+cd <your-repository>
 ```
 
-Other scripts: `db:seed:base` (the amenities and organization 1, named with `--name`: what an app made from the real estate preset starts with), `db:reset` (drop, migrate, seed small), `typecheck`. `bun run db:down` in the repository root stops the container the ERP shares. The database tests are the repository's `bun run test:integration`.
+## Setup
+
+You need [Bun](https://bun.sh) 1.4 and Docker.
+
+```sh
+bun install
+bun run db:up                     # Postgres 18 in Docker on port 55432; creates .env from .env.example
+bun run db:migrate
+bun run db:seed --scale small     # small | medium | large
+bun run protobase users create you@example.com --role admin --generate-password
+bun run dev                       # http://localhost:5173
+bun run test                      # the unit tests next to the config and the seed
+```
+
+Set your own `BETTER_AUTH_SECRET` in `.env` (`openssl rand -base64 32`).
+
+## Built with Protobase
+
+[Protobase](https://github.com/PrototeamHQ/protobase) builds the app from a Postgres database and a typed config: each table's data config sits in
+`config/<name>/data.ts` and its screens in `config/<name>/ui.ts`, all exported from `config/index.ts`, and
+`protobase dev` and `protobase serve` serve the API and the app from them.
+
+- Tested with Protobase **0.45.9**: the `@protobase/*` packages are pinned to it in `package.json`, and CI runs
+  against it. To upgrade, set the new version on each `@protobase/*` package, run `bun install`, then
+  `bun run typecheck`, `bun run test` and `bun run build`. The [release notes](https://github.com/PrototeamHQ/protobase/releases) say what changed.
+- Docs: [docs.protobase.net](https://docs.protobase.net). Source and issues: [PrototeamHQ/protobase](https://github.com/PrototeamHQ/protobase).
+- This app started as an example in Protobase's repository; its history came with it.
+- The same app is the `real-estate` preset that new Protobase apps can start from ([`@protobase/presets`](https://github.com/PrototeamHQ/protobase/tree/main/packages/presets)).
+
+## Database
+
+Other scripts: `db:seed:base` (the amenities and organization 1, named with `--name`: what an app made from the real estate preset starts with), `db:reset` (drop, migrate, seed small), `typecheck`. `bun run db:down` stops the container; the `pgdata` volume stays, remove it with `docker compose down -v`. The database tests run in [Protobase's repository](https://github.com/PrototeamHQ/protobase) (`bun run test:integration`).
 
 Connection string:
 
@@ -21,7 +58,7 @@ Connection string:
 postgres://protobase:protobase@localhost:55432/real_estate
 ```
 
-Scripts read `DATABASE_URL` and fall back to the string above. This example keeps its own git-ignored `.env` (a copy of `.env.example`) next to `package.json`: the nearest `.env` wins, so `protobase dev` and `serve` here use the real estate database while the ERP's `.env` points it at its own.
+Scripts read `DATABASE_URL` and fall back to the string above. `protobase dev` and `serve` read the git-ignored `.env` next to `package.json`, a copy of `.env.example`.
 
 ## Tables
 
@@ -59,9 +96,9 @@ Seed consistency: no overlapping leases, payments never exceed their charge, eve
 
 - `db/migrations/NNN_name.sql`: plain SQL, applied in order and recorded in `public.schema_migrations` by `db/migrate.ts`. The database itself comes from its host: `bun run db:up` here.
 - `seed/`: `world.ts` allocates ids per organization, `builders/` rebuild a property, unit, lease, rent ledger or ticket from its ordinal alone, `steps/` stream one module each. `base.ts` is the base seed.
-- `AGENTS.md`: the rules for the assistant that changes an app made from this example, which is also the real estate preset (`packages/presets`; the preset leaves this README out).
+- `AGENTS.md`: the rules for the assistant that changes an app made from this example, which is also the real estate preset ([`packages/presets`](https://github.com/PrototeamHQ/protobase/tree/main/packages/presets); the preset leaves this README out).
 - `config/`: one folder per table (`data.ts`, `ui.ts`), the roles, and the overview page (occupancy, arrears, open tickets).
-- `tests/examples/real-estate/` (in the repository root): `smoke.test.ts` checks counts and the consistency rules, `rules.integration.test.ts` that Postgres refuses an overlapping lease, an overpayment and a backward ticket step, `access.integration.test.ts` what each role and organization sees, who may reveal an IBAN and the record pages' related records, `server.integration.test.ts` builds and serves the example and loads its pages.
+- `tests/examples/real-estate/` in [Protobase's repository](https://github.com/PrototeamHQ/protobase): `smoke.test.ts` checks counts and the consistency rules, `rules.integration.test.ts` that Postgres refuses an overlapping lease, an overpayment and a backward ticket step, `access.integration.test.ts` what each role and organization sees, who may reveal an IBAN and the record pages' related records, `server.integration.test.ts` builds and serves the example and loads its pages.
 
 ## Roles
 
@@ -76,12 +113,21 @@ A tenant's IBAN is a [sensitive field](https://docs.protobase.net/reference/data
 
 ## Login
 
-`bun run --cwd examples/real-estate db:migrate` also creates Better Auth's tables in the `auth` schema of the real estate database (`db/migrations/007_auth.sql`); `bun run --cwd examples/real-estate dev` (http://localhost:5173) or `serve` then needs `BETTER_AUTH_SECRET` in `.env`. Create the first admin with `bun run --cwd examples/real-estate protobase users create you@example.com --role admin --generate-password`. A new user takes the next id of `core.users` (`generateUserId` in `auth/auth.ts`), which tickets name as their assignee, and gets their row there in organization 1 (`db/migrations/013_auth_users.sql`), without a `role`, since their roles live in the auth schema. See [Login with Better Auth](https://docs.protobase.net/reference/auth/).
+`bun run db:migrate` also creates Better Auth's tables in the `auth` schema of the real estate database (`db/migrations/007_auth.sql`); `bun run dev` (http://localhost:5173) or `serve` then needs `BETTER_AUTH_SECRET` in `.env`. Create the first admin with `bun run protobase users create you@example.com --role admin --generate-password`. A new user takes the next id of `core.users` (`generateUserId` in `auth/auth.ts`), which tickets name as their assignee, and gets their row there in organization 1 (`db/migrations/013_auth_users.sql`), without a `role`, since their roles live in the auth schema. See [Login with Better Auth](https://docs.protobase.net/reference/auth/).
 
 ## Serve and deploy
 
 ```sh
-bun run --cwd examples/real-estate serve    # protobase build, then protobase serve dist on port 8787 (PORT)
+bun run serve    # protobase build, then protobase serve dist on port 8787 (PORT)
 ```
 
-The ERP's `serve` uses the same port, so run one at a time or set `PORT` in this example's `.env`. Deploying works as for the ERP; see [its README](../erp/README.md#serve-and-deploy) and the [CLI reference](https://docs.protobase.net/reference/cli/#build).
+Set `PORT` in `.env` for another port. Deploying works as for the ERP; see [its README](https://github.com/protobase-community/erp#serve-and-deploy) and the [CLI reference](https://docs.protobase.net/reference/cli/#build).
+
+## Contributing
+
+Contributions are welcome, from a typo to a new screen: see [CONTRIBUTING.md](CONTRIBUTING.md). A problem in Protobase
+itself goes to [Protobase's issues](https://github.com/PrototeamHQ/protobase/issues).
+
+## Licence
+
+[Apache License 2.0](LICENSE).
