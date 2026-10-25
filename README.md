@@ -10,17 +10,6 @@ The seed holds Dutch properties, tenants and vendors, EUR rents and three years 
 For a public portal of homes for sale and for rent, see
 [property-portal](https://github.com/protobase-community/property-portal).
 
-## Deploy on Protobase Cloud
-
-[Start in the cloud with the real estate app](https://admin.protobase.net/start?preset=real-estate): sign up with GitHub or email, choose where its code
-goes (kept on Protobase, or a new private GitHub repository) and your workspace address. The app is created from this
-repository with its base data and is live in a few minutes. Protobase Cloud is in early access, with
-[plans](https://protobase.net/pricing) from €0.99 a month per app.
-
-Already have a workspace? In the [console](https://admin.protobase.net), press **New app** and pick **Real estate** under
-**Start from**. To deploy your own copy instead, made with **Use this template** below, pick
-**An existing GitHub repository**: Protobase keeps the app in sync with it and deploys every push.
-
 ## Run it locally
 
 You need [Bun](https://bun.sh) 1.4 and Docker.
