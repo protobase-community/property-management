@@ -1,25 +1,27 @@
 # Property management
 
-A back office for a rental and property management firm: the owners whose homes it lets, their properties and units,
-leases and tenants, monthly rent and payments with arrears, deposits, and maintenance tickets with work orders and
-vendors. Each role sees its own part, and a tenant's IBAN is revealed one at a time with an audit trail. It runs on a
-real Postgres 18 database with four module schemas, seeded deterministically with Dutch properties, tenants and
-vendors, EUR rents and three years of history (up to 2026-10-06).
+Rental and property management: owners, properties, units, leases, tenants, rent, payments, arrears and
+maintenance, with Dutch data. 19 resources and 4 roles, and a portfolio overview page. Tenants' IBANs are revealed one
+at a time, with an audit record, and overlapping leases are refused by a database constraint.
+
+The seed holds Dutch properties, tenants and vendors, EUR rents and three years of history, from a small set up to
+10,000 properties, 107,000 units and 3.57 million rent charges.
 
 For a public portal of homes for sale and for rent, see
 [property-portal](https://github.com/protobase-community/property-portal).
 
-## Use this template
+## Deploy on Protobase Cloud
 
-Press **Use this template** at the top of this page, then **Create a new repository**, to get your own copy with a
-clean history. Clone it and follow the setup below:
+[Start in the cloud with the real estate app](https://admin.protobase.net/start?preset=real-estate): sign up with GitHub or email, choose where its code
+goes (kept on Protobase, or a new private GitHub repository) and your workspace address. The app is created from this
+repository with its base data and is live in a few minutes. Protobase Cloud is in early access, with
+[plans](https://protobase.net/pricing) from €0.99 a month per app.
 
-```sh
-git clone https://github.com/<you>/<your-repository>.git
-cd <your-repository>
-```
+Already have a workspace? In the [console](https://admin.protobase.net), press **New app** and pick **Real estate** under
+**Start from**. To deploy your own copy instead, made with **Use this template** below, pick
+**An existing GitHub repository**: Protobase keeps the app in sync with it and deploys every push.
 
-## Setup
+## Run it locally
 
 You need [Bun](https://bun.sh) 1.4 and Docker.
 
@@ -30,10 +32,40 @@ bun run db:migrate
 bun run db:seed --scale small     # small | medium | large
 bun run protobase users create you@example.com --role admin --generate-password
 bun run dev                       # http://localhost:5173
-bun run test                      # the unit tests next to the config and the seed
+bun run test
 ```
 
-Set your own `BETTER_AUTH_SECRET` in `.env` (`openssl rand -base64 32`).
+Set your own `BETTER_AUTH_SECRET` in `.env` (`openssl rand -base64 32`). `bun run db:down` stops the database.
+
+## Use it as a template
+
+Press **Use this template** at the top of this page, then **Create a new repository**, to get your own copy with a
+clean history. Clone it and run it as above:
+
+```sh
+git clone https://github.com/<you>/<your-repository>.git
+cd <your-repository>
+```
+
+You can also fork it to contribute back, or start from it with `git clone https://github.com/protobase-community/property-management.git`.
+
+## Customise it
+
+- **Tables and screens.** Each table's data config is in `config/<name>/data.ts` (fields, validation, who may read
+  and change what) and its screens in `config/<name>/ui.ts` (lists, filters, record pages), all exported from
+  `config/index.ts`. See the [data config](https://docs.protobase.net/reference/data-config/) and [UI config](https://docs.protobase.net/reference/ui-config/)
+  references.
+- **Database changes.** Add a migration in `db/migrations/`, numbered after the last one, and run
+  `bun run db:migrate`. Never edit a migration that has run. For a new table, `bun run protobase scaffold
+  <connection string> --ui` reads the database and writes its `data.ts` and `ui.ts`, which you then adjust.
+- **Sign-in and accounts** are in `auth/`, on Better Auth ([Login](https://docs.protobase.net/reference/auth/)).
+- **Coding agents.** [AGENTS.md](AGENTS.md) holds the rules an assistant follows when it changes the app.
+- Check every change with `bun run typecheck`, `bun run test` and `bun run build`, as CI does.
+
+- **Roles.** The 4 roles and what each may do are in `config/roles.ts` ([Roles](#roles),
+  [Access](https://docs.protobase.net/reference/access/)). The tenant's IBAN is a
+  [sensitive field](https://docs.protobase.net/reference/data-config/#sensitive-fields).
+- **The overview page** (occupancy, arrears, open tickets) is in `config/overview/`.
 
 ## Built with Protobase
 
