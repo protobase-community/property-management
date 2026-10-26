@@ -4,6 +4,7 @@ import { tenanciesOf } from '../builders/allocation'
 import { DAY, windowEnd, windowStart } from '../calendar'
 import { copyRows } from '../copy'
 import { iso, isoDate, money, row } from '../format'
+import { businessEmail } from '../people'
 import { int, pick, rngAt, weighted } from '../rng'
 import type { World } from '../world'
 import { unitsOf } from './portfolio'
@@ -12,9 +13,9 @@ function* vendorRows(world: World) {
   const createdAt = iso(windowStart - 2 * 365 * DAY)
   for (const org of world.orgs) {
     for (const vendor of org.vendors) {
-      const domain = `${vendor.name.toLowerCase().replace(/[^a-z]+/g, '')}.nl`
       const rand = rngAt(org.seed + 16, vendor.id)
-      yield row(vendor.id, org.id, vendor.name, vendor.trade, `planning@${domain}`, `+31 ${int(rand, 10, 79)} ${int(rand, 1_000_000, 9_999_999)}`, money(vendor.rate * 100), true, createdAt, createdAt)
+      const email = businessEmail('planning', vendor.name, `${vendor.trade.replace('_', '-')}-${vendor.locale.country.toLowerCase()}-${vendor.id}`)
+      yield row(vendor.id, org.id, vendor.name, vendor.trade, email, vendor.locale.phone(rand), money(vendor.rate * 100), vendor.locale.currency, true, createdAt, createdAt)
     }
   }
 }
@@ -35,7 +36,7 @@ function* workOrderRows(world: World) {
       const ticket = ticketAt(org, ordinal)
       for (const w of ticket.workOrders) {
         const updatedAt = w.completedOn === null ? w.createdAt : Math.min(w.completedOn + 18 * 3_600_000, windowEnd)
-        yield row(id++, org.id, ticket.id, w.vendorId, isoDate(w.scheduledFor), w.completedOn === null ? null : isoDate(w.completedOn), w.hours?.toFixed(2) ?? null, w.costCents === null ? null : money(w.costCents), w.notes, iso(w.createdAt), iso(updatedAt))
+        yield row(id++, org.id, ticket.id, w.vendorId, isoDate(w.scheduledFor), w.completedOn === null ? null : isoDate(w.completedOn), w.hours?.toFixed(2) ?? null, w.costCents === null ? null : money(w.costCents), w.currency, w.notes, iso(w.createdAt), iso(updatedAt))
       }
     }
   }
@@ -70,8 +71,8 @@ function* inspectionRows(world: World) {
 }
 
 export const seedMaintenance = async (sql: Db, world: World) => {
-  await copyRows(sql, 'maintenance.vendors (id, organization_id, name, trade, email, phone, hourly_rate, active, created_at, updated_at)', vendorRows(world))
+  await copyRows(sql, 'maintenance.vendors (id, organization_id, name, trade, email, phone, hourly_rate, currency, active, created_at, updated_at)', vendorRows(world))
   await copyRows(sql, 'maintenance.tickets (id, organization_id, number, property_id, unit_id, reported_by, assigned_to, category, priority, status, title, description, reported_at, closed_at, created_at, updated_at)', ticketRows(world))
-  await copyRows(sql, 'maintenance.work_orders (id, organization_id, ticket_id, vendor_id, scheduled_for, completed_on, hours, cost, notes, created_at, updated_at)', workOrderRows(world))
+  await copyRows(sql, 'maintenance.work_orders (id, organization_id, ticket_id, vendor_id, scheduled_for, completed_on, hours, cost, currency, notes, created_at, updated_at)', workOrderRows(world))
   await copyRows(sql, 'maintenance.inspections (id, organization_id, unit_id, lease_id, inspector_id, kind, inspected_on, condition, notes, created_at, updated_at)', inspectionRows(world))
 }

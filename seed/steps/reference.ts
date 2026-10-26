@@ -11,7 +11,7 @@ export const seedReference = async (sql: Db, world: World) => {
   await copyRows(
     sql,
     'core.organizations (id, name, slug, city, kvk_number, created_at, updated_at)',
-    world.orgs.map((org) => row(org.id, org.name, org.slug, org.city, org.kvk, createdAt, createdAt)),
+    world.orgs.map((org) => row(org.id, org.name, org.slug, org.city, org.registration, createdAt, createdAt)),
   )
   await copyRows(
     sql,

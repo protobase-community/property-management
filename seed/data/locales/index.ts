@@ -1,0 +1,30 @@
+import type { Locale } from '../locale'
+import { ae } from './ae'
+import { au } from './au'
+import { bg } from './bg'
+import { br } from './br'
+import { ca } from './ca'
+import { de } from './de'
+import { fr } from './fr'
+import { gb } from './gb'
+import { gr } from './gr'
+import { ie } from './ie'
+import { il } from './il'
+import { india } from './in'
+import { jp } from './jp'
+import { ke } from './ke'
+import { kr } from './kr'
+import { mx } from './mx'
+import { ng } from './ng'
+import { nl } from './nl'
+import { pl } from './pl'
+import { qc } from './qc'
+import { th } from './th'
+import { tr } from './tr'
+import { us } from './us'
+import { vn } from './vn'
+
+export const locales = { ae, au, bg, br, ca, de, fr, gb, gr, ie, il, in: india, jp, ke, kr, mx, ng, nl, pl, qc, th, tr, us } satisfies Record<string, Locale>
+
+/** Names in Latin letters, which also turn up among the tenants of other countries. */
+export const travellingNames = [...Object.values(locales).filter((locale) => locale.travels), vn]

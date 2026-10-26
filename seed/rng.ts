@@ -34,3 +34,9 @@ export const weighted = <T>(rand: Rand, entries: ReadonlyArray<readonly [T, numb
 }
 
 export const makeRng = (seed: number) => rngAt(seed, 0)
+
+/** `count` random decimal digits, leading zeros kept. */
+export const digits = (rand: Rand, count: number) => Array.from({ length: count }, () => Math.floor(rand() * 10)).join('')
+
+/** One character of `alphabet` for each `#` in `pattern`; other characters stay as they are. */
+export const fill = (rand: Rand, pattern: string, alphabet = '0123456789') => pattern.replace(/#/g, () => pick(rand, [...alphabet]))

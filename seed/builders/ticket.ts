@@ -1,8 +1,10 @@
 import { DAY, windowEnd } from '../calendar'
-import type { Trade } from '../data/reference'
+import { currencies, payable } from '../data/currencies'
+import type { Locale, Trade } from '../data/locale'
 import { int, pick, rngAt, weighted } from '../rng'
 import type { Org } from '../world'
 import { propertyAcquiredAt, propertyShapeAt, tenanciesOf } from './allocation'
+import { propertyAt } from './property'
 
 const HOUR = 3_600_000
 
@@ -27,11 +29,12 @@ const categoryEntries = Object.entries(categories).map(([name, spec]) => [name a
 const triageDays = { urgent: [0, 0], high: [0, 2], normal: [1, 5], low: [2, 10] } as const
 const leadDays = { urgent: [0, 1], high: [1, 4], normal: [4, 14], low: [10, 35] } as const
 
-// The vendors of the organization that do this trade, falling back to the handyman.
-const vendorFor = (org: Org, category: Category, rand: () => number) => {
+// The vendors in the property's country that do this trade, falling back to its handyman.
+const vendorFor = (org: Org, locale: Locale, category: Category, rand: () => number) => {
   const trade = pick(rand, categories[category].trades)
-  const matching = org.vendors.filter((vendor) => vendor.trade === trade)
-  return pick(rand, matching.length > 0 ? matching : org.vendors.filter((vendor) => vendor.trade === 'general'))
+  const local = org.vendors.filter((vendor) => vendor.locale === locale)
+  const matching = local.filter((vendor) => vendor.trade === trade)
+  return pick(rand, matching.length > 0 ? matching : local.filter((vendor) => vendor.trade === 'general'))
 }
 
 // A unit of a property that was already managed when the ticket came in.
@@ -52,6 +55,7 @@ export const ticketAt = (org: Org, ordinal: number) => {
   const reportedAt = org.ticketTimes[ordinal]!
   const unit = unitFor(org, reportedAt, rand)
   const property = org.unitProperty[unit]!
+  const { locale } = propertyAt(org, property).city
   const category = weighted(rand, categoryEntries)
   const winter = [10, 11, 0, 1, 2].includes(new Date(reportedAt).getUTCMonth())
   const priority = category === 'heating' && winter && rand() < 0.5 ? 'urgent' : weighted(rand, [['urgent', 4], ['high', 18], ['normal', 58], ['low', 20]] as const)
@@ -79,15 +83,17 @@ export const ticketAt = (org: Org, ordinal: number) => {
     : 'done'
   const workOrders = status === 'scheduled' || status === 'done'
     ? visits.map((visit) => {
-        const vendor = vendorFor(org, category, rand)
+        const vendor = vendorFor(org, locale, category, rand)
         const completed = visit + 17 * HOUR <= windowEnd
         const hours = int(rand, 1, 12) / 2
         return {
           vendorId: vendor.id,
+          currency: locale.currency,
           scheduledFor: visit,
           completedOn: completed ? visit : null,
           hours: completed ? hours : null,
-          costCents: completed ? Math.round(hours * vendor.rate * 100) + int(rand, 0, 40) * 1000 : null,
+          // Labour, and up to 400 euros' worth of materials.
+          costCents: completed ? payable(hours * vendor.rate * 100 + int(rand, 0, 40) * 1000 * currencies[locale.currency].perEuro, locale.currency) : null,
           notes: completed && visits.length > 1 && visit === visits[0] ? 'Temporary fix, part ordered' : null,
           createdAt: plannedAt,
         }
@@ -106,7 +112,8 @@ export const ticketAt = (org: Org, ordinal: number) => {
     priority,
     status,
     title,
-    description: rand() < 0.6 ? `${title}. ${pick(rand, ['Tenant is home after 17:00.', 'Key is with the neighbours.', 'Please call before coming.', 'Started last week.', 'Second time this year.'])}` : null,
+    // The tenant's own words, in their language, after the title.
+    description: rand() < 0.6 ? `${title}. ${pick(rand, locale.notes)}` : null,
     reportedAt,
     closedAt,
     workOrders,

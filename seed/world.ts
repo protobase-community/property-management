@@ -1,5 +1,6 @@
 import { coSigned, propertyAcquiredAt, propertyShapeAt, tenanciesOf } from './builders/allocation'
 import { timestamps } from './calendar'
+import { slugify } from './format'
 import { orgSpecs } from './data/reference'
 import { scales, type ScaleName } from './scales'
 
@@ -45,10 +46,14 @@ export const buildWorld = (name: ScaleName) => {
     const users = spec.users.map(([first, initial, role], position) => ({
       id: next.user + position,
       name: `${first} ${initial}`,
-      email: `${first.toLowerCase()}@${spec.slug}.example`,
+      email: `${slugify(first)}@${spec.slug}.example`,
       role,
     }))
-    const vendors = spec.vendors.map(([vendorName, trade, rate], position) => ({ id: next.vendor + position, name: vendorName, trade, rate }))
+    // The contractors of every country the organization lets homes in, each working in its own.
+    const vendorLocales = [...new Set(spec.cities.map((city) => city.locale))]
+    const vendors = vendorLocales
+      .flatMap((locale) => locale.vendors.map(([vendorName, trade, rate]) => ({ name: vendorName, trade, rate, locale })))
+      .map((vendor, position) => ({ ...vendor, id: next.vendor + position }))
     const ticketCount = Math.round(unitCount * scale.ticketsPerUnit)
     const org = {
       ...spec,

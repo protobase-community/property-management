@@ -22,7 +22,7 @@ function* propertyRows(world: World) {
   for (const org of world.orgs) {
     for (let ordinal = 0; ordinal < org.propertyCount; ordinal++) {
       const p = propertyAt(org, ordinal)
-      yield row(p.id, org.id, p.ownerId, p.name, p.kind, p.street, p.houseNumber, p.postalCode, p.city, p.latitude, p.longitude, p.builtYear, iso(p.createdAt), iso(p.createdAt))
+      yield row(p.id, org.id, p.ownerId, p.name, p.kind, p.street, p.houseNumber, p.postalCode, p.city.name, p.city.locale.country, p.city.locale.currency, p.latitude, p.longitude, p.builtYear, iso(p.createdAt), iso(p.createdAt))
     }
   }
 }
@@ -39,7 +39,7 @@ function* unitRows(world: World) {
   for (const org of world.orgs) {
     for (const { property, unit, ordinal } of unitsOf(org)) {
       const status = unitStatus(tenanciesOf(org.seed, ordinal, property.createdAt))
-      yield row(unit.id, org.id, property.id, unit.label, unit.floor, unit.bedrooms, unit.area, unit.energyLabel, money(unit.baseRentCents), status, iso(unit.createdAt), iso(unit.createdAt))
+      yield row(unit.id, org.id, property.id, unit.label, unit.floor, unit.bedrooms, unit.area, unit.energyLabel, money(unit.baseRentCents), property.city.locale.currency, status, iso(unit.createdAt), iso(unit.createdAt))
     }
   }
 }
@@ -60,7 +60,8 @@ function* unitAmenityRows(world: World) {
   }
 }
 
-// Market value per m2 from the rent per m2, and how prices moved year on year.
+// Market value per m2 from the rent per m2, and how prices moved year on year. The yearly value is the Dutch WOZ in
+// the Netherlands and the value assessed for property tax elsewhere.
 const valueYears = [[2023, 0.93], [2024, 0.96], [2025, 1.0], [2026, 1.06]] as const
 
 function* valuationRows(world: World) {
@@ -71,18 +72,19 @@ function* valuationRows(world: World) {
       let area = 0
       for (let unit = org.unitStarts[ordinal]!; unit < org.unitStarts[ordinal + 1]!; unit++) area += unitAt(org, property, unit).area
       const rand = rngAt(org.seed + 15, ordinal)
-      const perM2 = property.rentPerM2 * 210 * (0.85 + rand() * 0.3)
+      const { currency, valuation } = property.city.locale
+      const perM2 = property.city.rentPerM2 * 210 * (0.85 + rand() * 0.3)
       for (const [year, factor] of valueYears) {
         const valuedOn = Date.UTC(year, 0, 1)
         if (valuedOn < property.createdAt) continue
         const value = Math.round((area * perM2 * factor) / 1000) * 1000
-        yield row(id++, org.id, property.id, isoDate(valuedOn), money(value * 100), 'woz', iso(valuedOn + 40 * DAY), iso(valuedOn + 40 * DAY))
+        yield row(id++, org.id, property.id, isoDate(valuedOn), money(value * 100), currency, valuation, iso(valuedOn + 40 * DAY), iso(valuedOn + 40 * DAY))
       }
       if (rand() < 0.12) {
         const valuedOn = Math.floor((property.createdAt + rand() * (windowEnd - property.createdAt)) / DAY) * DAY
         const value = Math.round((area * perM2 * (1.05 + rand() * 0.2)) / 1000) * 1000
         const recordedAt = Math.min(valuedOn + int(rand, 3, 20) * DAY, windowEnd)
-        yield row(id++, org.id, property.id, isoDate(valuedOn), money(value * 100), 'appraisal', iso(recordedAt), iso(recordedAt))
+        yield row(id++, org.id, property.id, isoDate(valuedOn), money(value * 100), currency, 'appraisal', iso(recordedAt), iso(recordedAt))
       }
     }
   }
@@ -90,8 +92,8 @@ function* valuationRows(world: World) {
 
 export const seedPortfolio = async (sql: Db, world: World) => {
   await copyRows(sql, 'portfolio.owners (id, organization_id, name, kind, email, phone, iban, management_fee_percent, created_at, updated_at)', ownerRows(world))
-  await copyRows(sql, 'portfolio.properties (id, organization_id, owner_id, name, kind, street, house_number, postal_code, city, latitude, longitude, built_year, created_at, updated_at)', propertyRows(world))
-  await copyRows(sql, 'portfolio.units (id, organization_id, property_id, label, floor, bedrooms, area_m2, energy_label, base_rent, status, created_at, updated_at)', unitRows(world))
+  await copyRows(sql, 'portfolio.properties (id, organization_id, owner_id, name, kind, street, house_number, postal_code, city, country, currency, latitude, longitude, built_year, created_at, updated_at)', propertyRows(world))
+  await copyRows(sql, 'portfolio.units (id, organization_id, property_id, label, floor, bedrooms, area_m2, energy_label, base_rent, currency, status, created_at, updated_at)', unitRows(world))
   await copyRows(sql, 'portfolio.unit_amenities (unit_id, amenity_code, organization_id, added_at)', unitAmenityRows(world))
-  await copyRows(sql, 'portfolio.valuations (id, organization_id, property_id, valued_on, value, source, created_at, updated_at)', valuationRows(world))
+  await copyRows(sql, 'portfolio.valuations (id, organization_id, property_id, valued_on, value, currency, source, created_at, updated_at)', valuationRows(world))
 }

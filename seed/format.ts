@@ -14,11 +14,16 @@ export const iso = (ms: number) => new Date(ms).toISOString()
 
 export const isoDate = (ms: number) => iso(ms).slice(0, 10)
 
+// Letters that do not decompose into a Latin letter and a mark.
+const ligatures: Record<string, string> = { ß: 'ss', đ: 'd', ð: 'd', ø: 'o', ł: 'l', ı: 'i', æ: 'ae', œ: 'oe', þ: 'th' }
+
+/** Lowercase ASCII words joined by dashes: diacritics are dropped, and a name in another script gives an empty slug. */
 export const slugify = (text: string) =>
   text
+    .toLowerCase()
+    .replace(/[ßđðøłıæœþ]/g, (letter) => ligatures[letter]!)
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
