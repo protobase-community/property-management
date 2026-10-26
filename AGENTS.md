@@ -20,5 +20,7 @@ exported from `config/index.ts`, over a Postgres database. Reference: https://do
 ## Scripts
 
 The platform runs `db:migrate` (the auth schema's migrations included), `typecheck` and `test`, with their settings in
-the environment: keep them working. Run `typecheck` and `test` before you finish. `db:seed:base` loads the amenities and organization 1,
-and `db:seed` the sample data, replacing everything in the app's tables.
+the environment: keep them working. Run `typecheck` and `test` before you finish, and after a change to the config or
+the migrations `bun run protobase doctor`, which checks the config against the migrated database: a filter or sort
+that no index serves fails there before it fails on Protobase Cloud. `db:seed:base` loads the amenities and
+organization 1, and `db:seed` the sample data, replacing everything in the app's tables.

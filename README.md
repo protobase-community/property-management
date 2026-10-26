@@ -49,7 +49,8 @@ You can also fork it to contribute back, or start from it with `git clone https:
   <connection string> --ui` reads the database and writes its `data.ts` and `ui.ts`, which you then adjust.
 - **Sign-in and accounts** are in `auth/`, on Better Auth ([Login](https://docs.protobase.net/reference/auth/)).
 - **Coding agents.** [AGENTS.md](AGENTS.md) holds the rules an assistant follows when it changes the app.
-- Check every change with `bun run typecheck`, `bun run test` and `bun run build`, as CI does.
+- Check every change with `bun run typecheck`, `bun run test` and `bun run build`, and with
+  `bun run protobase doctor` once the database is migrated: it finds a filter or sort no index serves. CI runs all four.
 
 - **Roles.** The 4 roles and what each may do are in `config/roles.ts` ([Roles](#roles),
   [Access](https://docs.protobase.net/reference/access/)). The tenant's IBAN is a
