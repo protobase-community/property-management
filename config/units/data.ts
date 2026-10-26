@@ -12,8 +12,10 @@ export const units = resource('units')
     floor: f.integer().default(0),
     bedrooms: f.integer().min(0),
     area_m2: f.integer().min(1).column('area_m2'),
-    energy_label: f.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']).filterable().sortable(),
+    energy_label: f.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']).optional().filterable().sortable(),
     base_rent: f.decimal({ precision: 10, scale: 2 }).filterable().sortable(),
+    // The database sets it to the property's currency.
+    currency: f.currency().readOnly(),
     status: f.enum(['let', 'vacant', 'renovation']).default('vacant').filterable().sortable(),
     created_at: f.timestamp().readOnly().filterable().sortable().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

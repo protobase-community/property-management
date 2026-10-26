@@ -12,8 +12,9 @@ export const tenants = resource('tenants')
     email: f.text(),
     phone: f.text().optional(),
     date_of_birth: f.date(),
-    iban: f.text().sensitive().access({ read: roles.can('screening.read') }),
+    iban: f.text().optional().regex(/^[A-Z]{2}\d{2}(?: ?[A-Z0-9]){11,30}$/, 'An IBAN, with or without spaces, such as GB29 NWBK 6016 1331 9268 19').sensitive().access({ read: roles.can('screening.read') }),
     monthly_income: f.decimal({ precision: 10, scale: 2 }).access({ read: roles.can('screening.read') }),
+    income_currency: f.currency().access({ read: roles.can('screening.read') }),
     created_at: f.timestamp().readOnly().filterable().sortable().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),
   })

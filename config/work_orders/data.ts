@@ -1,7 +1,7 @@
 import { f, resource } from '@protobase/schema'
 import { access } from '../roles'
 
-/** maintenance.work_orders: a vendor's visit for a ticket. */
+/** maintenance.work_orders: a vendor's visit for a ticket, invoiced in the vendor's currency. */
 export const workOrders = resource('work_orders')
   .table('maintenance.work_orders')
   .fields({
@@ -13,6 +13,8 @@ export const workOrders = resource('work_orders')
     completed_on: f.date().optional(),
     hours: f.decimal({ precision: 5, scale: 2 }).optional(),
     cost: f.decimal({ precision: 10, scale: 2 }).optional(),
+    // The database sets it to the vendor's currency.
+    currency: f.currency().readOnly(),
     notes: f.text().optional(),
     created_at: f.timestamp().readOnly().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

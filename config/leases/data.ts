@@ -14,6 +14,8 @@ export const leases = resource('leases')
     end_date: f.date().optional().filterable().sortable(),
     monthly_rent: f.decimal({ precision: 10, scale: 2 }),
     service_costs: f.decimal({ precision: 10, scale: 2 }).default('0'),
+    // The database sets it to the unit's currency.
+    currency: f.currency().readOnly(),
     notice_given_on: f.date().optional(),
     created_at: f.timestamp().readOnly().filterable().sortable().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

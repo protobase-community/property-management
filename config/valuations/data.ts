@@ -10,7 +10,9 @@ export const valuations = resource('valuations')
     property_id: f.relation('properties').filterable().sortable(),
     valued_on: f.date().filterable().sortable(),
     value: f.decimal({ precision: 14, scale: 2 }),
-    source: f.enum(['woz', 'appraisal']).filterable().sortable(),
+    // The database sets it to the property's currency.
+    currency: f.currency().readOnly(),
+    source: f.enum(['woz', 'assessment', 'appraisal']).filterable().sortable(),
     created_at: f.timestamp().readOnly().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),
   })

@@ -14,6 +14,8 @@ export const rentCharges = resource('rent_charges')
     amount: f.decimal({ precision: 10, scale: 2 }).filterable().sortable(),
     paid_amount: f.decimal({ precision: 10, scale: 2 }).readOnly().default('0'),
     outstanding: f.decimal({ precision: 10, scale: 2 }).readOnly().filterable().sortable(),
+    // The database sets it to the lease's currency.
+    currency: f.currency().readOnly(),
     created_at: f.timestamp().readOnly().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),
   })

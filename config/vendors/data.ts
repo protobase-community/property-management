@@ -12,6 +12,7 @@ export const vendors = resource('vendors')
     email: f.text().optional(),
     phone: f.text().optional(),
     hourly_rate: f.decimal({ precision: 8, scale: 2 }),
+    currency: f.currency(),
     active: f.boolean().default(true),
     created_at: f.timestamp().readOnly().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

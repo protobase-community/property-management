@@ -13,6 +13,7 @@ export const arrears = resource('arrears')
     open_charges: f.integer().readOnly().filterable().sortable(),
     balance: f.decimal({ precision: 12, scale: 2 }).readOnly().filterable().sortable(),
     oldest_due_on: f.date().readOnly().filterable().sortable(),
+    currency: f.currency().readOnly(),
   })
   .primaryKey((r) => r.lease_id)
   .tenant((r) => r.organization_id)

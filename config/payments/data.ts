@@ -10,7 +10,9 @@ export const payments = resource('payments')
     charge_id: f.relation('rent_charges').filterable().sortable(),
     paid_on: f.date().filterable().sortable(),
     amount: f.decimal({ precision: 10, scale: 2 }),
-    method: f.enum(['direct_debit', 'bank_transfer', 'ideal']).filterable().sortable(),
+    // The database sets it to the charge's currency.
+    currency: f.currency().readOnly(),
+    method: f.enum(['direct_debit', 'bank_transfer', 'ideal', 'card', 'mobile']).filterable().sortable(),
     reference: f.text().optional(),
     created_at: f.timestamp().readOnly().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

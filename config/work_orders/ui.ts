@@ -8,11 +8,12 @@ export const workOrdersView = view<typeof workOrders>('work_orders')
     vendor_id: r.vendor_id.label('Vendor'),
     scheduled_for: r.scheduled_for.label('Visit'),
     completed_on: r.completed_on.label('Completed'),
-    cost: r.cost.help('Labour and materials, as invoiced by the vendor.').prefix('€').decimals(2),
+    cost: r.cost.help('Labour and materials, as invoiced by the vendor.').decimals(2),
+    currency: r.currency.help("The vendor's currency."),
   }))
-  .list((r) => ({ columns: [r.ticket_id, r.vendor_id, r.scheduled_for, r.completed_on, r.cost], sort: [[r.scheduled_for, 'desc']] }))
+  .list((r) => ({ columns: [r.ticket_id, r.vendor_id, r.scheduled_for, r.completed_on, r.cost, r.currency], sort: [[r.scheduled_for, 'desc']] }))
   .filters((r, w) => [w.facets(r.vendor_id), w.dateRange(r.scheduled_for, { presets: ['7d', '30d', '90d'] })])
   .layout((r) => [
     l.section('Visit', [r.ticket_id, r.vendor_id, r.scheduled_for, r.completed_on]),
-    l.section('Invoice', [r.hours, r.cost, r.notes]),
+    l.section('Invoice', [r.hours, r.cost, r.currency, r.notes]),
   ])

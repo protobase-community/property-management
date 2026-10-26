@@ -11,7 +11,8 @@ export const owners = resource('owners')
     kind: f.enum(['private', 'company', 'pension_fund', 'housing_association']).filterable().sortable(),
     email: f.text().optional(),
     phone: f.text().optional(),
-    iban: f.text().regex(/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/, 'An IBAN without spaces, such as NL91ABNA0417164300'),
+    // Empty where the owner's bank is in a country without IBANs.
+    iban: f.text().optional().regex(/^[A-Z]{2}\d{2}(?: ?[A-Z0-9]){11,30}$/, 'An IBAN, with or without spaces, such as GB29 NWBK 6016 1331 9268 19'),
     management_fee_percent: f.decimal({ precision: 4, scale: 2 }).default('6'),
     created_at: f.timestamp().readOnly().filterable().sortable().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),

@@ -7,10 +7,11 @@ export const arrearsView = view<typeof arrears>('arrears')
   .fields((r) => ({
     lease_id: r.lease_id.label('Lease'),
     open_charges: r.open_charges.label('Open months').help('Charges not yet paid in full.'),
-    balance: r.balance.label('Outstanding').prefix('€').decimals(2),
+    balance: r.balance.label('Outstanding').decimals(2),
+    currency: r.currency.help("The lease's currency."),
     oldest_due_on: r.oldest_due_on.label('Oldest due'),
   }))
-  .list((r) => ({ columns: [r.lease_id, r.balance, r.open_charges, r.oldest_due_on], sort: [[r.balance, 'desc']] }))
+  .list((r) => ({ columns: [r.lease_id, r.balance, r.currency, r.open_charges, r.oldest_due_on], sort: [[r.oldest_due_on, 'asc']] }))
   .filters((r, w) => [w.range(r.balance, { histogram: true }), w.range(r.open_charges)])
   .actions((a) => [
     a.action('remind', {

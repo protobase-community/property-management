@@ -11,15 +11,16 @@ export const unitsView = view<typeof units>('units')
   .fields((r) => ({
     property_id: r.property_id.label('Property'),
     area_m2: r.area_m2.label('Area').help('Living area in m².').suffix(' m²'),
-    energy_label: r.energy_label.format('badge'),
-    base_rent: r.base_rent.label('Market rent').help('What a new lease would ask today, per month.').prefix('€').decimals(2),
+    energy_label: r.energy_label.format('badge').help('The European energy rating; empty where the country has none.'),
+    base_rent: r.base_rent.label('Market rent').help('What a new lease would ask today, per month.').decimals(2),
+    currency: r.currency.help("The property's currency."),
     status: r.status.help('Let while a lease runs; vacant or under renovation between leases.').format('badge').valueLabels({ let: 'Let', vacant: 'Vacant', renovation: 'Renovation' }),
   }))
-  .list((r) => ({ columns: [r.label, r.property_id, r.status, r.bedrooms, r.area_m2, r.energy_label, r.base_rent], search: [r.label] }))
+  .list((r) => ({ columns: [r.label, r.property_id, r.status, r.bedrooms, r.area_m2, r.energy_label, r.base_rent, r.currency], search: [r.label] }))
   .filters((r, w) => [w.facets(r.status), w.facets(r.energy_label), w.range(r.base_rent, { histogram: true })])
   .layout((r) => [
     l.section('Unit', [r.property_id, r.label, r.floor, r.bedrooms, r.area_m2, r.energy_label]),
-    l.section('Letting', [r.status, r.base_rent]),
+    l.section('Letting', [r.status, r.base_rent, r.currency]),
     l.related('Let to', {
       resource: 'lease_tenants',
       field: 'lease_id',
@@ -34,7 +35,7 @@ export const unitsView = view<typeof units>('units')
       resource: 'leases',
       field: 'unit_id',
       filter: running,
-      columns: ['number', 'term', 'start_date', 'end_date', 'monthly_rent', 'service_costs'],
+      columns: ['number', 'term', 'start_date', 'end_date', 'monthly_rent', 'service_costs', 'currency'],
       empty: 'Vacant: no lease runs today.',
     }),
     l.sidebar([r.status, r.base_rent]),

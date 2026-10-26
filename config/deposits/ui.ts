@@ -5,13 +5,14 @@ export const depositsView = view<typeof deposits>('deposits')
   .names({ singular: 'Deposit', plural: 'Deposits' })
   .fields((r) => ({
     lease_id: r.lease_id.label('Lease'),
-    amount: r.amount.help('Usually two months of the first rent.').prefix('€').decimals(2),
+    amount: r.amount.help('Usually two months of the first rent.').decimals(2),
     status: r.status.help('Held while the lease runs; settled after the move-out inspection.').format('badge').valueLabels({ held: 'Held', returned: 'Returned', partially_returned: 'Partially returned', withheld: 'Withheld' }),
-    returned_amount: r.returned_amount.prefix('€').decimals(2),
+    returned_amount: r.returned_amount.decimals(2),
+    currency: r.currency.help("The lease's currency."),
   }))
-  .list((r) => ({ columns: [r.lease_id, r.amount, r.status, r.received_on, r.returned_on, r.returned_amount] }))
+  .list((r) => ({ columns: [r.lease_id, r.amount, r.currency, r.status, r.received_on, r.returned_on, r.returned_amount] }))
   .filters((r, w) => [w.facets(r.status)])
   .layout((r) => [
-    l.section('Deposit', [r.lease_id, r.amount, r.received_on]),
+    l.section('Deposit', [r.lease_id, r.amount, r.currency, r.received_on]),
     l.section('Settlement', [r.status, r.returned_amount, r.returned_on], { help: 'Fill in after the move-out inspection.' }),
   ])

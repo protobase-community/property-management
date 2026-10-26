@@ -26,16 +26,17 @@ describe('real estate pages', () => {
     const section = lease.layout.find((item) => item.kind === 'related' && item.title === 'Rent charges')
     expect(section).toMatchObject({ resource: 'rent_charges', field: 'lease_id', sort: 'period desc', limit: 12 })
     expect(section?.kind === 'related' && section.columns?.filter((column) => !Object.hasOwn(charges.fields, column))).toEqual([])
-    expect(section?.kind === 'related' && section.columns?.slice(-2)).toEqual(['paid_amount', 'outstanding'])
+    expect(section?.kind === 'related' && section.columns?.slice(-3)).toEqual(['paid_amount', 'outstanding', 'currency'])
   })
 
-  it('shows what is still owed on a rent charge: a read-only, filterable column formatted like the amount', () => {
+  it('shows what is still owed on a rent charge: a read-only, filterable column formatted like the amount, beside its currency', () => {
     const { resources, views } = configExports(config)
     const charges = resources.map((source) => source.toModel()).find((model) => model.name === 'rent_charges')!
     const view = views.map((entry) => entry.toModel()).find((entry) => entry.resource === 'rent_charges')!
     expect(charges.fields.outstanding).toMatchObject({ type: 'decimal', readOnly: true, filterable: true, sortable: true })
-    expect(view.fields.outstanding).toMatchObject({ prefix: '€', decimals: 2 })
-    expect(view.list?.columns.slice(-2)).toEqual(['paid_amount', 'outstanding'])
+    expect(view.fields.outstanding).toMatchObject({ decimals: 2 })
+    expect(view.fields.outstanding?.prefix).toBeUndefined()
+    expect(view.list?.columns.slice(-3)).toEqual(['paid_amount', 'outstanding', 'currency'])
   })
 
   it('lists a rent charge\'s payments on its page, newest first', () => {
@@ -43,7 +44,7 @@ describe('real estate pages', () => {
     const payments = resources.map((source) => source.toModel()).find((model) => model.name === 'payments')!
     const charge = views.map((view) => view.toModel()).find((view) => view.resource === 'rent_charges')!
     const section = charge.layout.find((item) => item.kind === 'related' && item.title === 'Payments')
-    expect(section).toMatchObject({ resource: 'payments', field: 'charge_id', sort: 'paid_on desc', columns: ['paid_on', 'amount', 'method', 'reference'] })
+    expect(section).toMatchObject({ resource: 'payments', field: 'charge_id', sort: 'paid_on desc', columns: ['paid_on', 'amount', 'currency', 'method', 'reference'] })
     expect(section?.kind === 'related' && section.columns?.filter((column) => !Object.hasOwn(payments.fields, column))).toEqual([])
   })
 })

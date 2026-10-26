@@ -8,7 +8,7 @@ const remind = async ({ record, client, values }: ActionContext) => {
   const tenant = tenantId === undefined ? undefined : await client.get('tenants', String(tenantId))
   const lease = await client.get('leases', leaseId)
   const subject = encodeURIComponent(`Rent outstanding on lease ${String(lease.record.number)}`)
-  const outstanding = `€${String(record!.balance)} is outstanding, the oldest since ${String(record!.oldest_due_on)}.`
+  const outstanding = `${String(record!.balance)} ${String(record!.currency)} is outstanding, the oldest since ${String(record!.oldest_due_on)}.`
   const body = encodeURIComponent(values?.note ? `${outstanding}\n\n${String(values.note)}` : outstanding)
   window.location.assign(`mailto:${String(tenant?.record.email ?? '')}?subject=${subject}&body=${body}`)
 }

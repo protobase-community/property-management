@@ -16,9 +16,9 @@ export const portfolioOverview = page(
     </Grid>
     <Grid columns={2}>
       <RecordCard
-        title="Largest arrears"
+        title="Longest in arrears"
         resource="arrears"
-        sort="balance desc"
+        sort="oldest_due_on"
         empty="Every tenant is paid up."
         actions={<Action name="remind" label="Send reminder" variant="primary" />}
       >
@@ -28,7 +28,10 @@ export const portfolioOverview = page(
           <Field name="open_charges" label="Open months" />
           <Field name="oldest_due_on" label="Oldest due" />
         </Grid>
-        <Field name="lease_id.unit_id" label="Unit" />
+        <Grid columns={2}>
+          <Field name="lease_id.unit_id" label="Unit" />
+          <Field name="currency" />
+        </Grid>
       </RecordCard>
       <RecordCard
         title="Oldest urgent ticket"
@@ -48,10 +51,10 @@ export const portfolioOverview = page(
       </RecordCard>
     </Grid>
     <Grid columns={2}>
-      <Table title="Arrears" resource="arrears" sort="balance desc" columns={['lease_id', 'balance', 'open_charges', 'oldest_due_on']} limit={5} empty="Every tenant is paid up." />
+      <Table title="Arrears" resource="arrears" sort="oldest_due_on" columns={['lease_id', 'balance', 'currency', 'open_charges', 'oldest_due_on']} limit={5} empty="Every tenant is paid up." />
       <Table title="Open tickets" resource="tickets" filter="status = 'reported' OR status = 'scheduled'" sort="reported_at desc" columns={['number', 'title', 'priority', 'status']} limit={5} empty="Nothing is open." />
     </Grid>
-    <Table title="Vacant units" resource="units" filter="status = 'vacant'" columns={['label', 'property_id', 'bedrooms', 'base_rent']} limit={5} empty="Every unit is let." />
+    <Table title="Vacant units" resource="units" filter="status = 'vacant'" columns={['label', 'property_id', 'bedrooms', 'base_rent', 'currency']} limit={5} empty="Every unit is let." />
   </Page>,
   { nav: { group: 'Portfolio', order: 0 }, icon: 'layout-dashboard' },
 )

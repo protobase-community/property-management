@@ -12,6 +12,8 @@ export const deposits = resource('deposits')
     received_on: f.date(),
     status: f.enum(['held', 'returned', 'partially_returned', 'withheld']).default('held').filterable().sortable(),
     returned_amount: f.decimal({ precision: 10, scale: 2 }).default('0'),
+    // The database sets it to the lease's currency.
+    currency: f.currency().readOnly(),
     returned_on: f.date().optional(),
     created_at: f.timestamp().readOnly().filterable().sortable().dbDefault(),
     updated_at: f.timestamp().readOnly().dbDefault(),
