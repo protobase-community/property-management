@@ -1,11 +1,16 @@
 # Property management
 
 Rental and property management: owners, properties, units, leases, tenants, rent, payments, arrears and
-maintenance, with Dutch data. 19 resources and 4 roles, and a portfolio overview page. Tenants' IBANs are revealed one
-at a time, with an audit record, and overlapping leases are refused by a database constraint.
+maintenance, for homes in any country. 19 resources and 4 roles, and a portfolio overview page. Tenants' IBANs are
+revealed one at a time, with an audit record, and overlapping leases are refused by a database constraint.
 
-The seed holds Dutch properties, tenants and vendors, EUR rents and three years of history, from a small set up to
-10,000 properties, 107,000 units and 3.57 million rent charges.
+The seed holds made-up homes, tenants, owners and vendors in 28 cities of 22 countries, from London, Berlin and New York
+to Dubai, Tel Aviv, Mumbai, Bangkok, Tokyo, Seoul, Lagos and Nairobi. Names, streets and buildings are written in their
+own scripts (Latin with diacritics, Greek, Cyrillic, Arabic and Hebrew right to left, Han, kana, Hangul, Devanagari and
+Thai), tickets carry the tenant's own words and the odd emoji, and phone numbers, postal codes, IBANs, payment methods
+and rents in 17 currencies follow each country. It holds three years of history, from a small set up to 10,000
+properties, 107,000 units and 3.57 million rent charges. E-mail addresses use the domains reserved for examples, and
+phone numbers the ranges set aside for fiction where a country has them.
 
 For a public portal of homes for sale and for rent, see
 [property-portal](https://github.com/protobase-community/property-portal).
@@ -92,7 +97,7 @@ Scripts read `DATABASE_URL` and fall back to the string above. `protobase dev` a
 | Schema | Tables |
 | --- | --- |
 | `core` | `organizations`, `users` (role `admin`, `manager`, `finance` or `maintenance`) |
-| `portfolio` | `owners`, `properties` (`latitude` and `longitude` columns), `units`, `amenities` (key: code), `unit_amenities` (join table), `valuations` (yearly WOZ value and the odd appraisal) |
+| `portfolio` | `owners`, `properties` (`latitude` and `longitude`, `country` and `currency` columns), `units`, `amenities` (key: code), `unit_amenities` (join table), `valuations` (the yearly value assessed for property tax, the WOZ value in the Netherlands, and the odd appraisal) |
 | `leasing` | `tenants`, `leases` (no two overlap on a unit: a `btree_gist` exclusion constraint on the unit and `daterange(start_date, end_date)`), `lease_tenants` (primary tenant and co-signers), `deposits` |
 | `billing` | `rent_charges` (one per lease and month), `payments`, `arrears` (a view: outstanding balance per lease) |
 | `maintenance` | `vendors`, `tickets` (enum `ticket_status`), `work_orders`, `inspections` |
@@ -106,15 +111,16 @@ Postgres keeps these rules itself, whoever writes:
 - `rent_charges.outstanding` is generated (`amount - paid_amount`, stored), so it follows `paid_amount` however that is written and can be filtered, sorted and indexed like any column.
 - A ticket's status only moves forward: `reported` to `scheduled` or `cancelled`, `scheduled` to `done` or `cancelled`. Closing it stamps `closed_at`.
 - `billing.arrears` reads only the open charges, through a partial index, so it stays quick however much history there is.
+- A property's `currency` is the one its money is in: a unit, valuation, lease, deposit, rent charge and payment takes the currency of the record it belongs to when it is written, and a work order its vendor's, so amounts in different currencies are never added up. Postal codes are optional, for countries without them, and so are IBANs and energy labels.
 
-Seed consistency: no overlapping leases, payments never exceed their charge, every charge's `outstanding` is its amount minus its payments, the arrears view equals charges minus payments per lease, a unit is `let` exactly when a lease covers the last day, and every lease has one primary tenant and one deposit. Rents rise every 1 July; about one lease in four pays late, some in parts, and a few stop paying.
+Seed consistency: no overlapping leases, payments never exceed their charge, every charge's `outstanding` is its amount minus its payments, the arrears view equals charges minus payments per lease, a unit is `let` exactly when a lease covers the last day, and every lease has one primary tenant and one deposit. Rents rise once a year on the lease's anniversary; about one lease in four pays late, some in parts, and a few stop paying.
 
 ## Scales
 
 | Scale | Properties | Units | Leases | Rent charges | Payments | Tickets | Seed time (Apple silicon, local Docker) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | small | 60 | 648 | 1,050 | 20,000 | 20,000 | 778 | about 1 s |
-| medium | 2,000 | 21,800 | 35,600 | 724,000 | 728,000 | 26,000 | about 23 s (360 MB) |
+| medium | 2,000 | 21,800 | 35,600 | 724,000 | 728,000 | 26,000 | about 26 s (400 MB) |
 | large | 10,000 | 107,000 | 175,000 | 3,570,000 | 3,590,000 | 129,000 | not timed since foreign keys are checked (1.7 GB) |
 
 `db:seed` truncates everything first, so it can be re-run or used to switch scale. Like the ERP's, the loader streams `COPY`, drops secondary indexes during the load and rebuilds them afterwards, switches the tables' own triggers off (so it writes `paid_amount` itself), then resets identity sequences and runs `ANALYZE`. Foreign keys are checked throughout: the role an app gets may not skip them. The scale last seeded is recorded in `public.seed_info`.
