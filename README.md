@@ -16,7 +16,7 @@ You need [Bun](https://bun.sh) 1.4 and Docker.
 
 ```sh
 bun install
-bun run db:up                     # Postgres 18 in Docker on port 55432; creates .env from .env.example
+bun run db:up                     # Postgres 18 in Docker on port 55434; creates .env from .env.example
 bun run db:migrate
 bun run db:seed --scale small     # small | medium | large
 bun run protobase users create you@example.com --role admin --generate-password
@@ -76,7 +76,7 @@ Other scripts: `db:seed:base` (the amenities and organization 1, named with `--n
 Connection string:
 
 ```
-postgres://protobase:protobase@localhost:55432/real_estate
+postgres://protobase:protobase@localhost:55434/real_estate
 ```
 
 Scripts read `DATABASE_URL` and fall back to the string above. `protobase dev` and `serve` read the git-ignored `.env` next to `package.json`, a copy of `.env.example`.

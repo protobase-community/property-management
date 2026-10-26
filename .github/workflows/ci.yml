@@ -18,7 +18,7 @@ jobs:
           POSTGRES_PASSWORD: protobase
           POSTGRES_DB: real_estate
         ports:
-          - 55432:5432
+          - 55434:5432
         options: >-
           --health-cmd "pg_isready -U protobase -d real_estate"
           --health-interval 2s
