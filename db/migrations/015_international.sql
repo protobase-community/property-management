@@ -51,26 +51,26 @@ alter table maintenance.work_orders alter column currency drop default;
 
 -- A record's currency is the one of the record it belongs to, set when it is written: tg_argv names that table and
 -- the column that points at it. A work order is invoiced in its vendor's currency.
-create function public.inherit_currency() returns trigger language plpgsql as $$
+create function core.inherit_currency() returns trigger language plpgsql as $$
 begin
   execute format('select currency from %s where id = $1', tg_argv[0]) into new.currency using (to_jsonb(new) ->> tg_argv[1])::bigint;
   return new;
 end $$;
 
 create trigger unit_currency before insert or update of property_id on portfolio.units
-  for each row execute function public.inherit_currency('portfolio.properties', 'property_id');
+  for each row execute function core.inherit_currency('portfolio.properties', 'property_id');
 create trigger valuation_currency before insert or update of property_id on portfolio.valuations
-  for each row execute function public.inherit_currency('portfolio.properties', 'property_id');
+  for each row execute function core.inherit_currency('portfolio.properties', 'property_id');
 create trigger lease_currency before insert or update of unit_id on leasing.leases
-  for each row execute function public.inherit_currency('portfolio.units', 'unit_id');
+  for each row execute function core.inherit_currency('portfolio.units', 'unit_id');
 create trigger deposit_currency before insert or update of lease_id on leasing.deposits
-  for each row execute function public.inherit_currency('leasing.leases', 'lease_id');
+  for each row execute function core.inherit_currency('leasing.leases', 'lease_id');
 create trigger rent_charge_currency before insert or update of lease_id on billing.rent_charges
-  for each row execute function public.inherit_currency('leasing.leases', 'lease_id');
+  for each row execute function core.inherit_currency('leasing.leases', 'lease_id');
 create trigger payment_currency before insert or update of charge_id on billing.payments
-  for each row execute function public.inherit_currency('billing.rent_charges', 'charge_id');
+  for each row execute function core.inherit_currency('billing.rent_charges', 'charge_id');
 create trigger work_order_currency before insert or update of vendor_id on maintenance.work_orders
-  for each row execute function public.inherit_currency('maintenance.vendors', 'vendor_id');
+  for each row execute function core.inherit_currency('maintenance.vendors', 'vendor_id');
 
 -- Arrears per lease, in the lease's currency: balances in different currencies are not added up.
 create or replace view billing.arrears as
