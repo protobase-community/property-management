@@ -38,6 +38,10 @@ cd <your-repository>
 
 You can also fork it to contribute back, or start from it with `git clone https://github.com/protobase-community/property-management.git`.
 
+To put your copy online, open the [Protobase Cloud console](https://admin.protobase.net), press **New app** and pick
+**An existing GitHub repository**: every push to its default branch then deploys, once `db:migrate` and
+`protobase doctor` pass.
+
 ## Customise it
 
 - **Tables and screens.** Each table's data config is in `config/<name>/data.ts` (fields, validation, who may read
@@ -48,7 +52,8 @@ You can also fork it to contribute back, or start from it with `git clone https:
   `bun run db:migrate`. Never edit a migration that has run. For a new table, `bun run protobase scaffold
   <connection string> --ui` reads the database and writes its `data.ts` and `ui.ts`, which you then adjust.
 - **Sign-in and accounts** are in `auth/`, on Better Auth ([Login](https://docs.protobase.net/reference/auth/)).
-- **Coding agents.** [AGENTS.md](AGENTS.md) holds the rules an assistant follows when it changes the app.
+- **Coding agents.** [AGENTS.md](AGENTS.md) holds the rules an assistant follows when it changes the app, and
+  `bun run protobase skill install` gives it Protobase's own skills for the version in `package.json`.
 - Check every change with `bun run typecheck`, `bun run test` and `bun run build`, and with
   `bun run protobase doctor` once the database is migrated: it finds a filter or sort no index serves. CI runs all four.
 
