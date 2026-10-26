@@ -29,7 +29,7 @@ bun run dev                       # http://localhost:5173
 bun run test
 ```
 
-Set your own `BETTER_AUTH_SECRET` in `.env` (`openssl rand -base64 32`). `bun run db:down` stops the database.
+Set your own `PROTOBASE_SECRET` in `.env` (`openssl rand -base64 32`). `bun run db:down` stops the database.
 
 ## Use it as a template
 
@@ -73,7 +73,7 @@ To put your copy online, open the [Protobase Cloud console](https://admin.protob
 `config/<name>/data.ts` and its screens in `config/<name>/ui.ts`, all exported from `config/index.ts`, and
 `protobase dev` and `protobase serve` serve the API and the app from them.
 
-- Tested with Protobase **0.46.12**: the `@protobase/*` packages are pinned to it in `package.json`, and CI runs
+- Tested with Protobase **0.49.2**: the `@protobase/*` packages are pinned to it in `package.json`, and CI runs
   against it. To upgrade, set the new version on each `@protobase/*` package, run `bun install`, then
   `bun run typecheck`, `bun run test` and `bun run build`. The [release notes](https://github.com/PrototeamHQ/protobase/releases) say what changed.
 - Docs: [docs.protobase.net](https://docs.protobase.net). Source and issues: [PrototeamHQ/protobase](https://github.com/PrototeamHQ/protobase).
@@ -146,7 +146,7 @@ A tenant's IBAN is a [sensitive field](https://docs.protobase.net/reference/data
 
 ## Login
 
-`bun run db:migrate` also creates Better Auth's tables in the `auth` schema of the real estate database (`db/migrations/007_auth.sql`); `bun run dev` (http://localhost:5173) or `serve` then needs `BETTER_AUTH_SECRET` in `.env`. Create the first admin with `bun run protobase users create you@example.com --role admin --generate-password`. A new user takes the next id of `core.users` (`generateUserId` in `auth/auth.ts`), which tickets name as their assignee, and gets their row there in organization 1 (`db/migrations/013_auth_users.sql`), without a `role`, since their roles live in the auth schema. See [Login with Better Auth](https://docs.protobase.net/reference/auth/).
+`bun run db:migrate` also creates Better Auth's tables in the `auth` schema of the real estate database (`db/migrations/007_auth.sql`); `bun run dev` (http://localhost:5173) or `serve` then needs `PROTOBASE_SECRET` in `.env`. Create the first admin with `bun run protobase users create you@example.com --role admin --generate-password`. A new user takes the next id of `core.users` (`generateUserId` in `auth/hooks.ts`), which tickets name as their assignee, and gets their row there in organization 1 (`db/migrations/013_auth_users.sql`), without a `role`, since their roles live in the auth schema. See [Login with Better Auth](https://docs.protobase.net/reference/auth/).
 
 ## Serve and deploy
 

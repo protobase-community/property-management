@@ -10,7 +10,7 @@ exported from `config/index.ts`, over a Postgres database. Reference: https://do
 - Expand only, where possible: add tables, columns and indexes, and keep what the running app still reads. Rename or
   drop only when asked to, once nothing uses it.
 - A new table gets `organization_id integer not null references core.organizations (id)`, like the others; everyone
-  works in organization 1 (`auth/auth.ts`).
+  works in organization 1 (`protobase.config.ts`).
 
 ## Never touch
 
