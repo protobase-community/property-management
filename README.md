@@ -73,7 +73,7 @@ To put your copy online, open the [Protobase Cloud console](https://admin.protob
 `config/<name>/data.ts` and its screens in `config/<name>/ui.ts`, all exported from `config/index.ts`, and
 `protobase dev` and `protobase serve` serve the API and the app from them.
 
-- Tested with Protobase **0.66.5**: the `@protobase/*` packages are `devDependencies` at its caret range, so the app is
+- Tested with Protobase **0.66.6**: the `@protobase/*` packages are `devDependencies` at its caret range, so the app is
   [bundled](https://docs.protobase.net/reference/versioning/): `protobase dev`, `build` and the `db:*` scripts (through
   `protobase run`) use the CLI's own copies, and `protobase types` writes the `.protobase/tsconfig.json` that
   `tsconfig.json` extends. A newer CLI within the range needs no change here. To move past it, set the new range on
