@@ -79,7 +79,6 @@ To put your copy online, open the [Protobase Cloud console](https://admin.protob
   `tsconfig.json` extends. A newer CLI within the range needs no change here. To move past it, set the new range on
   each `@protobase/*` package, run `bun install`, then `bun run typecheck`, `bun run test` and `bun run build`. The
   [release notes](https://github.com/PrototeamHQ/protobase/releases) say what changed.
-- `.github/workflows/protobase-bump.yml` moves the range when Protobase releases and merges the change once CI passes.
 - Docs: [docs.protobase.net](https://docs.protobase.net). Source and issues: [PrototeamHQ/protobase](https://github.com/PrototeamHQ/protobase).
 - This app started as an example in Protobase's repository; its history came with it.
 - The same app is the `real-estate` preset that new Protobase apps can start from ([`@protobase/presets`](https://github.com/PrototeamHQ/protobase/tree/main/packages/presets)).
