@@ -6,7 +6,10 @@ import { defineConfig } from '@protobase/config'
 export default defineConfig({
   auth: {
     // No defaultRole on purpose: every account is created with an explicit role (`protobase users create --role`).
-    roles: ['admin', 'manager', 'finance', 'maintenance'],
+    roles: ['admin', 'manager', 'finance', 'maintenance', 'member'],
+    // Colleagues join on their own as a `member`, who only sees the portfolio until an admin gives them a real role.
+    // The empty list keeps sign-up off; a host turns it on for the owner's domain with PROTOBASE_SIGN_UP_DOMAINS.
+    signUp: { role: 'member', domains: [] },
   },
   // Organizations are not used yet: everyone works in organization 1.
   authenticate: { tenant: 1 },

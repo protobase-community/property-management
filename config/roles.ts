@@ -10,7 +10,9 @@ export type RealEstateName =
 /**
  * Capabilities are `<resource|area>.<action>[.own]`. Property managers run the portfolio and the leases, finance the
  * money, maintenance the tickets; `.own` tickets are those assigned to the user. The `screening` area gates a tenant's
- * income and IBAN, which maintenance staff, who call tenants to plan a visit, do not see.
+ * income and IBAN, which maintenance staff, who call tenants to plan a visit, do not see. A `member`, who joined on
+ * their own with an address at the company's domain, sees only the properties and units until an admin gives them a
+ * real role: owners, tenants and the rest describe people outside the company.
  */
 export const roles = defineRoles<RealEstateName>({
   admin: ['*'],
@@ -34,6 +36,7 @@ export const roles = defineRoles<RealEstateName>({
     'tickets.read', 'tickets.create', 'tickets.update.own', 'work_orders.*', 'inspections.*', 'vendors.*',
     'properties.read', 'units.read', 'amenities.read', 'unit_amenities.read', 'tenants.read', 'users.read',
   ],
+  member: ['properties.read', 'units.read'],
 })
 
 /** The standard rule set for a resource: every operation needs the matching capability. */
