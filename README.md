@@ -1,7 +1,7 @@
 # Property management
 
 Rental and property management: owners, properties, units, leases, tenants, rent, payments, arrears and
-maintenance, for homes in any country. 19 resources and 4 roles, and a portfolio overview page. Tenants' IBANs are
+maintenance, for homes in any country. 19 resources and 5 roles, and a portfolio overview page. Tenants' IBANs are
 revealed one at a time, with an audit record, and overlapping leases are refused by a database constraint.
 
 The seed holds made-up homes, tenants, owners and vendors in 28 cities of 22 countries, from London, Berlin and New York
@@ -62,7 +62,7 @@ To put your copy online, open the [Protobase Cloud console](https://admin.protob
 - Check every change with `bun run typecheck`, `bun run test` and `bun run build`, and with
   `bun run protobase doctor` once the database is migrated: it finds a filter or sort no index serves. CI runs all four.
 
-- **Roles.** The 4 roles and what each may do are in `config/roles.ts` ([Roles](#roles),
+- **Roles.** The 5 roles and what each may do are in `config/roles.ts` ([Roles](#roles),
   [Access](https://docs.protobase.net/reference/access/)). The tenant's IBAN is a
   [sensitive field](https://docs.protobase.net/reference/data-config/#sensitive-fields).
 - **The overview page** (occupancy, arrears, open tickets) is in `config/overview/`.
@@ -144,12 +144,15 @@ Seed consistency: no overlapping leases, payments never exceed their charge, eve
 | `manager` | the portfolio, tenants and leases, tickets and inspections; reads rent, payments and arrears |
 | `finance` | rent charges, payments, deposits and valuations; reads leases, tenants and the portfolio |
 | `maintenance` | tickets (changes only those assigned to them), work orders, inspections and vendors; reads properties, units and tenants, without their income and IBAN |
+| `member` | reads properties and units: the role of colleagues who join on their own, until an admin gives them another |
 
 A tenant's IBAN is a [sensitive field](https://docs.protobase.net/reference/data-config/#sensitive-fields): no list or record carries it, and managers and finance reveal it one tenant at a time with the eye button on the record page. Every reveal publishes an audit event; this example keeps the default queue, which prints it on the server console as an `[audit]` line. A tenant's page lists the homes they rent through their leases, current leases first, and a unit's page who it is let to (the primary tenant and co-signers) and the running lease, or that it is vacant ([related records](https://docs.protobase.net/reference/ui-config/#related-records)).
 
 ## Login
 
 `bun run db:migrate` also creates Better Auth's tables in the `auth` schema of the real estate database (`db/migrations/007_auth.sql`); `bun run dev` (http://localhost:5173) or `serve` then needs `PROTOBASE_SECRET` in `.env`. Create the first admin with `bun run protobase users create you@example.com --role admin --generate-password`. A new user takes the next id of `core.users` (`generateUserId` in `auth/hooks.ts`), which tickets name as their assignee, and gets their row there in organization 1 (`db/migrations/013_auth_users.sql`), without a `role`, since their roles live in the auth schema. See [Login with Better Auth](https://docs.protobase.net/reference/auth/).
+
+Open sign-up is off: `auth.signUp` in `protobase.config.ts` lists no domains. Set `PROTOBASE_SIGN_UP_DOMAINS=example.com` (with mail settings, `PROTOBASE_SMTP_URL` and `PROTOBASE_MAIL_FROM`) and people with an address at that domain create their own account, as a `member`.
 
 ## Serve and deploy
 
